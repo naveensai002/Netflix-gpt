@@ -1,10 +1,13 @@
+import React from 'react';
+
 const Input = ({ id, onChange, value, label, type }) => {
+  // console.log(value, onChange);
   return (
     <div className='relative'>
       <input
-        onChange={onChange}
-        value={value}
         type={type}
+        value={value}
+        onChange={onChange}
         id={id}
         className='
         block

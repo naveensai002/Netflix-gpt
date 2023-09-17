@@ -2,11 +2,15 @@ import React, { useCallback, useState } from 'react';
 
 import { LOGO } from '../utils/constant';
 import Input from './Input';
+import { checkValidData } from '../utils/validate';
 
-export default function Header() {
+const Header = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
-  const [passcode, setPasscode] = useState('');
+  const [password, setPassword] = useState('');
+
+  const [error, setError] = useState(null);
+
   const [variant, setVariant] = useState('login');
 
   /* login form toggle */
@@ -15,6 +19,16 @@ export default function Header() {
       currentVariant === 'login' ? 'register' : 'login'
     );
   }, []);
+
+  /*login and register button handle function */
+
+  const submitHandler = (e) => {
+    e.preventDefault();
+    /* checking the validations of form*/
+
+    const message = checkValidData(email, password);
+    setError(message);
+  };
 
   return (
     <div
@@ -34,49 +48,51 @@ export default function Header() {
             <div className='flex flex-col gap-4 mb-8'>
               {variant === 'register' && (
                 <Input
-                  id={name}
-                  placeholder='username'
+                  id='name'
+                  type='text'
                   label='Username'
                   value={name}
-                  type='text'
-                  onChange={(ev) => setName(ev.target.value)}
+                  onChange={(e) => setName(e.target.value)}
                 />
               )}
               <Input
-                id={name}
-                placeholder='email'
-                label='Email'
-                value={email}
+                id='email'
                 type='email'
-                onChange={(ev) => setEmail(ev.target.value)}
+                label='Email address or phone number'
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
               />
+
               <Input
-                id={name}
-                placeholder='password'
-                label='Passcode'
-                value={passcode}
                 type='password'
-                onChange={(ev) => setPasscode(ev.target.value)}
+                id='password'
+                label='Password'
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
               />
+              <p className='text-red-500 text-sm p-1 font-bold  capitalize tracking-tighter'>
+                {error}
+              </p>
             </div>
             {/* Button */}
             <button
               type='submit'
               className='lg:w-full bg-red-600 mb-6 p-2 rounded-md hover:bg-red-400 text-white text-md font-semibold transition'
+              onClick={submitHandler}
             >
+              {/* Sign up and register button */}
+
               {variant === 'login' ? 'Login' : 'Register'}
             </button>
             <p className='mb-6 ml-1  text-white text-semibold  '>
-              {variant === 'login'
-                ? 'First time using Netflix ?'
-                : 'Already a member ?'}
+              {variant === 'login' ? 'New to Netflix? ' : 'Already a member ?'}
               <span
                 onClick={toggleVariant}
                 className=' items-center text-bold text-red-500 cursor-pointer'
               >
                 <button className=' transition hover:-translate-y-1 text-white ml-1 hover:text-red-700 hover:underline cursor-pointer'>
                   {' '}
-                  {variant === 'login' ? 'create an account' : 'login'}
+                  {variant === 'login' ? 'create an account' : 'Login'}
                 </button>
               </span>
             </p>
@@ -85,4 +101,6 @@ export default function Header() {
       </div>
     </div>
   );
-}
+};
+
+export default Header;
