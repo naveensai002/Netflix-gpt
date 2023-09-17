@@ -4,6 +4,12 @@ import { LOGO } from '../utils/constant';
 import Input from './Input';
 import { checkValidData } from '../utils/validate';
 
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+} from 'firebase/auth';
+import { auth } from '../utils/firebase';
+
 const Header = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -28,6 +34,48 @@ const Header = () => {
 
     const message = checkValidData(email, password);
     setError(message);
+    if (message) return;
+
+    /* create a new user  sign in/ sign up */
+
+    /* Sign Up logic*/
+
+    if (variant === 'register') {
+      createUserWithEmailAndPassword(auth, email, password)
+        .then((userCredential) => {
+          // Signed in
+          const user = userCredential.user;
+          console.log(user);
+
+          // ...
+        })
+        .catch((error) => {
+          const errorCode = error.code;
+          const errorMessage = error.message;
+          setError(errorCode + ' ' + errorMessage);
+          // ..
+        });
+    }
+    /* end of signup logic */
+
+    /* sign IN logic*/
+    if (variant === 'login') {
+      signInWithEmailAndPassword(auth, email, password)
+        .then((userCredential) => {
+          // Signed in
+          const user = userCredential.user;
+          console.log(user);
+          // ...
+        })
+        .catch((error) => {
+          const errorCode = error.code;
+          const errorMessage = error.message;
+          setError(errorCode + '' + errorMessage);
+        });
+    }
+    /* end of login logic*/
+
+    /* end of submit handler function */
   };
 
   return (
