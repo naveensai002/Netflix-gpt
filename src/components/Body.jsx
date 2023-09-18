@@ -11,6 +11,7 @@ import { addUser, removeUser } from '../utils/userSlice';
 
 const Body = () => {
   const dispatch = useDispatch();
+
   const appRouter = createBrowserRouter([
     {
       path: '/',
@@ -25,14 +26,17 @@ const Body = () => {
   useEffect(() => {
     onAuthStateChanged(auth, (user) => {
       if (user) {
-        const { uid, email, displayName } = user.uid;
+        const { uid, email, displayName, photoURL } = user;
 
         /* dispatch the action to store*/
-        dispatch(addUser({ uid, email, displayName }));
+        dispatch(addUser({ uid, email, displayName, photoURL }));
+        /* navigate to the browse page*/
       } else {
         /* User is signed out */
 
         dispatch(removeUser());
+
+        /* navigate to login/signup page*/
       }
     });
   }, []);

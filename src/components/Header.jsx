@@ -7,8 +7,13 @@ import { checkValidData } from '../utils/validate';
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
+  updateProfile,
 } from 'firebase/auth';
+
 import { auth } from '../utils/firebase';
+import { useNavigate } from 'react-router-dom';
+import { addUser } from '../utils/userSlice';
+import { useDispatch } from 'react-redux';
 
 const Header = () => {
   const [name, setName] = useState('');
@@ -18,6 +23,8 @@ const Header = () => {
   const [error, setError] = useState(null);
 
   const [variant, setVariant] = useState('login');
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   /* login form toggle */
   const toggleVariant = useCallback(() => {
@@ -40,11 +47,42 @@ const Header = () => {
 
     /* Sign Up logic*/
 
+    const images = [
+      '../../public/default-blue.png',
+      '../../public/default-green.png',
+      '../../public/default-red.png',
+      '../../public/default-slate.png',
+    ];
+    const imgsrc = images[Math.floor(Math.random() * 4)];
+    // console.log(imgsrc);
+
     if (variant === 'register') {
       createUserWithEmailAndPassword(auth, email, password)
         .then((userCredential) => {
           // Signed in
           const user = userCredential.user;
+
+          /* update the profile*/
+          updateProfile(user, {
+            displayName: name,
+            photoURL: imgsrc,
+          })
+            .then(() => {
+              const { uid, email, displayName, photoURL } = auth.currentUser;
+              dispatch(
+                addUser({
+                  uid: uid,
+                  email: email,
+                  displayName: displayName,
+                  photoURL: photoURL,
+                })
+              );
+            })
+            .catch((error) => {
+              // An error occurred
+              setError(error);
+            });
+          navigate('/browse');
           console.log(user);
 
           // ...
@@ -65,6 +103,7 @@ const Header = () => {
           // Signed in
           const user = userCredential.user;
           console.log(user);
+          navigate('/browse');
           // ...
         })
         .catch((error) => {
