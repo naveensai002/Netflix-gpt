@@ -1,4 +1,6 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
+import { FcGoogle } from 'react-icons/fc';
+import { FaGithub } from 'react-icons/fa';
 
 import { LOGO } from '../utils/constant';
 import Input from './Input';
@@ -8,11 +10,15 @@ import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   updateProfile,
+  signInWithPopup,
+  GoogleAuthProvider,
+  GithubAuthProvider,
+  onAuthStateChanged,
 } from 'firebase/auth';
 
 import { auth } from '../utils/firebase';
 import { useNavigate } from 'react-router-dom';
-import { addUser } from '../utils/userSlice';
+import { addUser, removeUser } from '../utils/userSlice';
 import { useDispatch } from 'react-redux';
 
 const Header = () => {
@@ -60,7 +66,7 @@ const Header = () => {
       createUserWithEmailAndPassword(auth, email, password)
         .then((userCredential) => {
           // Signed in
-          const user = userCredential.user;
+          const user = userCredential?.user;
 
           /* update the profile*/
           updateProfile(user, {
@@ -82,8 +88,6 @@ const Header = () => {
               // An error occurred
               setError(error);
             });
-          navigate('/browse');
-          console.log(user);
 
           // ...
         })
@@ -102,9 +106,6 @@ const Header = () => {
         .then((userCredential) => {
           // Signed in
           const user = userCredential.user;
-          console.log(user);
-          navigate('/browse');
-          // ...
         })
         .catch((error) => {
           const errorCode = error.code;
@@ -116,6 +117,69 @@ const Header = () => {
 
     /* end of submit handler function */
   };
+
+  /* Google auth logic*/
+
+  const googleAuth = () => {
+    const provider = new GoogleAuthProvider();
+    signInWithPopup(auth, provider)
+      .then((result) => {
+        const credential = GoogleAuthProvider.credentialFromResult(result);
+        const token = credential.accessToken;
+
+        const user = result.user;
+      })
+      .catch((error) => {
+        const errorCode = error.code;
+        const errorMessage = error.message;
+
+        const email = error.customData.email;
+
+        const credential = GoogleAuthProvider.credentialFromError(error);
+      });
+  };
+  /* end of google auth */
+
+  /* */
+  const githubAuth = () => {
+    const provider = new GithubAuthProvider();
+    signInWithPopup(auth, provider)
+      .then((result) => {
+        const credential = GoogleAuthProvider.credentialFromResult(result);
+        const token = credential.accessToken;
+
+        const user = result.user;
+      })
+      .catch((error) => {
+        const errorCode = error.code;
+        const errorMessage = error.message;
+
+        const email = error.customData.email;
+
+        const credential = GoogleAuthProvider.credentialFromError(error);
+      });
+  };
+  /*end of github auth */
+
+  useEffect(() => {
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        const { uid, email, displayName, photoURL } = user;
+
+        /* dispatch the action to store*/
+        dispatch(addUser({ uid, email, displayName, photoURL }));
+        navigate('/browse');
+        /* navigate to the browse page*/
+      } else {
+        /* User is signed out */
+
+        dispatch(removeUser());
+        navigate('/');
+
+        /* navigate to login/signup page*/
+      }
+    });
+  }, []);
 
   return (
     <div
@@ -171,6 +235,77 @@ const Header = () => {
 
               {variant === 'login' ? 'Login' : 'Register'}
             </button>
+            {/* Google auth button */}
+            <div
+              className='
+                  flex 
+                  flex-row
+                  mt-4
+                  mb-4
+                  justify-center
+                 items-center 
+                 '
+            >
+              <div
+                className='
+                  w-10
+                  h-10
+                  bg-white
+                  flex 
+                  items-center 
+                  mt-4
+                  mb-4
+                  mr-4
+                  justify-center
+                  cursor-pointer
+                  rounded-full
+                  transition
+                  hover:opacity-80
+                  gap-3
+                   '
+              >
+                <button
+                  className='
+              '
+                  onClick={googleAuth}
+                >
+                  <FcGoogle size={30} />
+                </button>
+              </div>
+
+              {/* end of google auth button */}
+
+              {/* github auth button */}
+
+              <div
+                className='
+                  w-10
+                  h-10
+                  bg-white
+                  flex 
+                  items-center
+                  mt-4
+                  mb-4
+                  justify-center
+                  cursor-pointer
+                  rounded-full
+                  transition
+                  hover:opacity-80
+                  gap-3         '
+              >
+                <button
+                  className='
+              '
+                  onClick={githubAuth}
+                >
+                  <FaGithub size={30} />
+                </button>
+              </div>
+            </div>
+
+            {/* end of github auth button */}
+
+            {/* end of google auth button */}
             <p className='mb-6 ml-1  text-white text-semibold  '>
               {variant === 'login' ? 'New to Netflix? ' : 'Already a member ?'}
               <span
