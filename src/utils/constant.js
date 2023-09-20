@@ -6,6 +6,8 @@ export const USER_AVATAR =
 
 export const TMDB_API_KEY = 'cc8335cd7bae4173ddb2c8d73b2c1f73';
 
+export const IMG_CDN_URL = 'https://image.tmdb.org/t/p/w500';
+
 export const options = {
   method: 'GET',
   headers: {

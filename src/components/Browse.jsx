@@ -6,10 +6,9 @@ export default function Browse() {
   return (
     <div>
       <Header />
-      <div>
-        <MainContainer />
-        <SecondaryContainer />
-      </div>
+
+      <MainContainer />
+      <SecondaryContainer />
     </div>
   );
 }
