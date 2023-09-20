@@ -1,5 +1,6 @@
 import React from 'react';
-import { imgsrc } from './Browse';
+import { imgsrc } from './Header';
+
 const AccountMenu = ({ visible, signOut, user }) => {
   const name = user;
   if (!visible) {

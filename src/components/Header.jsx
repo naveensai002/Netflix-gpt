@@ -1,328 +1,191 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { FcGoogle } from 'react-icons/fc';
-import { FaGithub } from 'react-icons/fa';
-
-import { LOGO } from '../utils/constant';
-import Input from './Input';
-import { checkValidData } from '../utils/validate';
-
-import {
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  updateProfile,
-  signInWithPopup,
-  GoogleAuthProvider,
-  GithubAuthProvider,
-  onAuthStateChanged,
-} from 'firebase/auth';
-
+import { LOGO, options } from '../utils/constant';
+import photo from '../../public/RedProfile.png';
+import { signOut } from 'firebase/auth';
 import { auth } from '../utils/firebase';
 import { useNavigate } from 'react-router-dom';
-import { addUser, removeUser } from '../utils/userSlice';
-import { useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
+import NavbarItem from './NavbarItem';
 
-const Header = () => {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+import {
+  BellIcon,
+  MagnifyingGlassIcon,
+  ChevronDownIcon,
+} from '@heroicons/react/24/outline';
 
-  const [error, setError] = useState(null);
+import MobileMenu from './MobileMenu';
+import AccountMenu from './AccountMenu';
+import useNowPlayingHooks from '../hooks/useNowPlayingHooks';
 
-  const [variant, setVariant] = useState('login');
+const images = [
+  '../../public/default-blue.png',
+  '../../public/default-green.png',
+  '../../public/default-red.png',
+  '../../public/default-slate.png',
+];
+export const imgsrc = images[Math.floor(Math.random() * 4)];
+console.log(imgsrc);
+const TOP_OFFSET = 66;
+
+export default function Header() {
+  const user = useSelector((state) => state.user);
+
+  // console.log(user);
   const navigate = useNavigate();
-  const dispatch = useDispatch();
 
-  /* login form toggle */
-  const toggleVariant = useCallback(() => {
-    setVariant((currentVariant) =>
-      currentVariant === 'login' ? 'register' : 'login'
-    );
-  }, []);
+  const [mobileMenu, setMobileMenu] = useState(false);
+  const [showAccountMenu, setShowAccountMenu] = useState(false);
+  const [showBackground, setShowBackground] = useState(false);
+  // const [movies, setMovies] = useState([]);
 
-  /*login and register button handle function */
-
-  const submitHandler = (e) => {
-    e.preventDefault();
-    /* checking the validations of form*/
-
-    const message = checkValidData(email, password);
-    setError(message);
-    if (message) return;
-
-    /* create a new user  sign in/ sign up */
-
-    /* Sign Up logic*/
-
-    const images = [
-      '../../public/default-blue.png',
-      '../../public/default-green.png',
-      '../../public/default-red.png',
-      '../../public/default-slate.png',
-    ];
-    const imgsrc = images[Math.floor(Math.random() * 4)];
-    // console.log(imgsrc);
-
-    if (variant === 'register') {
-      createUserWithEmailAndPassword(auth, email, password)
-        .then((userCredential) => {
-          // Signed in
-          const user = userCredential?.user;
-
-          /* update the profile*/
-          updateProfile(user, {
-            displayName: name,
-            photoURL: imgsrc,
-          })
-            .then(() => {
-              const { uid, email, displayName, photoURL } = auth.currentUser;
-              dispatch(
-                addUser({
-                  uid: uid,
-                  email: email,
-                  displayName: displayName,
-                  photoURL: photoURL,
-                })
-              );
-            })
-            .catch((error) => {
-              // An error occurred
-              setError(error);
-            });
-
-          // ...
-        })
-        .catch((error) => {
-          const errorCode = error.code;
-          const errorMessage = error.message;
-          setError(errorCode + ' ' + errorMessage);
-          // ..
-        });
-    }
-    /* end of signup logic */
-
-    /* sign IN logic*/
-    if (variant === 'login') {
-      signInWithEmailAndPassword(auth, email, password)
-        .then((userCredential) => {
-          // Signed in
-          const user = userCredential.user;
-        })
-        .catch((error) => {
-          const errorCode = error.code;
-          const errorMessage = error.message;
-          setError(errorCode + '' + errorMessage);
-        });
-    }
-    /* end of login logic*/
-
-    /* end of submit handler function */
-  };
-
-  /* Google auth logic*/
-
-  const googleAuth = () => {
-    const provider = new GoogleAuthProvider();
-    signInWithPopup(auth, provider)
-      .then((result) => {
-        const credential = GoogleAuthProvider.credentialFromResult(result);
-        const token = credential.accessToken;
-
-        const user = result.user;
-      })
-      .catch((error) => {
-        const errorCode = error.code;
-        const errorMessage = error.message;
-
-        const email = error.customData.email;
-
-        const credential = GoogleAuthProvider.credentialFromError(error);
-      });
-  };
-  /* end of google auth */
-
+  /* movie fetch call*/
+  //used the logic in custom hook
+  const data = useNowPlayingHooks();
+  console.log(data);
   /* */
-  const githubAuth = () => {
-    const provider = new GithubAuthProvider();
-    signInWithPopup(auth, provider)
-      .then((result) => {
-        const credential = GoogleAuthProvider.credentialFromResult(result);
-        const token = credential.accessToken;
-
-        const user = result.user;
-      })
-      .catch((error) => {
-        const errorCode = error.code;
-        const errorMessage = error.message;
-
-        const email = error.customData.email;
-
-        const credential = GoogleAuthProvider.credentialFromError(error);
-      });
-  };
-  /*end of github auth */
 
   useEffect(() => {
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        const { uid, email, displayName, photoURL } = user;
-
-        /* dispatch the action to store*/
-        dispatch(addUser({ uid, email, displayName, photoURL }));
-        navigate('/browse');
-        /* navigate to the browse page*/
+    const handleScroll = () => {
+      console.log(window.scrollY);
+      if (window.scrollY >= TOP_OFFSET) {
+        setShowBackground(true);
       } else {
-        /* User is signed out */
-
-        dispatch(removeUser());
-        navigate('/');
-
-        /* navigate to login/signup page*/
+        setShowBackground(false);
       }
-    });
+    };
+
+    window.addEventListener('scroll', handleScroll);
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
   }, []);
 
+  const toggleAccountMenu = useCallback(() => {
+    setShowAccountMenu((current) => !current);
+  }, []);
+
+  const toggleMobileMenu = useCallback(() => {
+    setMobileMenu((current) => !current);
+  }, []);
+
+  const handleSignout = () => {
+    signOut(auth)
+      .then(() => {
+        // Sign-out successful.
+        navigate('/');
+      })
+      .catch((error) => {
+        // An error happened.
+        navigate('/error');
+      });
+  };
+
   return (
-    <div
-      className='bg-[url(https://assets.nflxext.com/ffe/siteui/vlv3/dc1cf82d-97c9-409f-b7c8-6ac1718946d6/14a8fe85-b6f4-4c06-8eaf-eccf3276d557/IN-en-20230911-popsignuptwoweeks-perspective_alpha_website_medium.jpg)] w-full
-    h-screen relative bg-fixed bg-cover bg-no-repeat '
-    >
-      <div className='bg-black w-full h-full lg:bg-opacity-50'>
-        <nav className=' py-5 px-12'>
-          <img src={LOGO} alt='logo' className='h-12' />
-        </nav>
+    // <div className=" relative  z-40 p-4 bg-gradient-to-b from-black w-full h-full flex justify-between text-white">
+    <div className='w-full  fixed z-40 bg-gradient-to-b from-black'>
+      <div
+        className={`px-4  relative md:px-16 py-6 h-full flex flex-row  transition duration-500 ${
+          showBackground ? 'bg-zinc-900 bg-opacity-90' : ''
+        }`}
+      >
+        <img src={LOGO} className='h-12 lg:h-15' />
+        {/* </div> */}
 
-        <div className='flex justify-center'>
-          <div className='bg-black bg-opacity-70 px-16 py-15 self-center mt-2 lg:w-2/5 lg:max-w-md rounded-md w-full'>
-            <h2 className='text-white text-4xl mb-8  mt-2 font-semibold'>
-              {variant === 'login' ? 'Sign In' : 'Create an account'}
-            </h2>
-            <div className='flex flex-col gap-4 mb-8'>
-              {variant === 'register' && (
-                <Input
-                  id='name'
-                  type='text'
-                  label='Username'
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                />
-              )}
-              <Input
-                id='email'
-                type='email'
-                label='Email address or phone number'
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+        {/* nav icon items */}
+        <div
+          className='
+        flex
+        flex-row
+        ml-8
+        gap-7
+        hidden
+       
+        text-white
+        lg:flex
+        cursor-pointer'
+        >
+          <NavbarItem label='Home' />
+          <NavbarItem label='Series' />
+          <NavbarItem label='Films' />
+          <NavbarItem label='New & Popular' />
+          <NavbarItem label='My List' />
+          <NavbarItem label='Browse by languages' />
+        </div>
+
+        {/* end of nav icon items */}
+
+        {/* sign out button */}
+        {/* <div className=' relative flex lg:hidden flex-row  gap-2 ml-8 cursor-pointer '>
+        <img
+          src={user?.photoURL}
+          className='h-12 w-12 rounded-md bg-cover bg-center cursor-pointer'
+        />
+        <button
+          className='text-white bg-transparent -tracking-tighter font-semibold p-1 items-center h-12 ml-2 rounded-md
+          transition hover:-translate-y-1 hover:text-red-600 capitalize  cursor-pointer'
+          onClick={handleSignout}
+        >
+          Sign out
+        </button>
+      </div> */}
+
+        <div
+          className='
+             lg:hidden 
+              flex flex-row 
+              cursor-pointer
+              gap-2 
+              ml-2
+              items-center
+              relative
+      '
+        >
+          <p className='text-white text-sm '>Browse</p>
+          <ChevronDownIcon
+            className={`w-4 text-white fill-white transition ${
+              mobileMenu ? 'rotate-180' : 'rotate-0'
+            }`}
+            onClick={() => toggleMobileMenu()}
+          />
+          <MobileMenu logout={handleSignout} visible={mobileMenu} />
+        </div>
+
+        <div className='hidden lg:flex flex-row h-6 ml-auto mx-auto gap-7 items-center mr-4'>
+          <div
+            className='
+        text-gray-200 hover:text-gray-300 cursor-pointer transition
+        '
+          >
+            <MagnifyingGlassIcon className='w-6' />
+          </div>
+          <div className='text-gray-200 hover:text-gray-300 cursor-pointer transition'>
+            <BellIcon className='w-6' />
+          </div>
+          <div
+            onClick={toggleAccountMenu}
+            className=' flex flex-row justify-center m-auto'
+          >
+            <div className='flex  flex-row ml-2 gap-2 cursor-pointer'>
+              <img
+                src={imgsrc}
+                alt='user-profile'
+                className='h-8 w-8 rounded-md'
               />
-
-              <Input
-                type='password'
-                id='password'
-                label='Password'
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+              <ChevronDownIcon
+                className={`w-4  m-auto flex cursor-pointer text-white fill-white transition ${
+                  showAccountMenu ? 'rotate-180' : 'rotate-0'
+                }`}
               />
-              <p className='text-red-500 text-sm p-1 font-bold  capitalize tracking-tighter'>
-                {error}
-              </p>
+              <AccountMenu
+                visible={showAccountMenu}
+                user={user?.displayName || 'Naveen'}
+                signOut={handleSignout}
+              />
             </div>
-            {/* Button */}
-            <button
-              type='submit'
-              className='lg:w-full bg-red-600 mb-6 p-2 rounded-md hover:bg-red-400 text-white text-md font-semibold transition'
-              onClick={submitHandler}
-            >
-              {/* Sign up and register button */}
-
-              {variant === 'login' ? 'Login' : 'Register'}
-            </button>
-            {/* Google auth button */}
-            <div
-              className='
-                  flex 
-                  flex-row
-                  mt-4
-                  mb-4
-                  justify-center
-                 items-center 
-                 '
-            >
-              <div
-                className='
-                  w-10
-                  h-10
-                  bg-white
-                  flex 
-                  items-center 
-                  mt-4
-                  mb-4
-                  mr-4
-                  justify-center
-                  cursor-pointer
-                  rounded-full
-                  transition
-                  hover:opacity-80
-                  gap-3
-                   '
-              >
-                <button
-                  className='
-              '
-                  onClick={googleAuth}
-                >
-                  <FcGoogle size={30} />
-                </button>
-              </div>
-
-              {/* end of google auth button */}
-
-              {/* github auth button */}
-
-              <div
-                className='
-                  w-10
-                  h-10
-                  bg-white
-                  flex 
-                  items-center
-                  mt-4
-                  mb-4
-                  justify-center
-                  cursor-pointer
-                  rounded-full
-                  transition
-                  hover:opacity-80
-                  gap-3         '
-              >
-                <button
-                  className='
-              '
-                  onClick={githubAuth}
-                >
-                  <FaGithub size={30} />
-                </button>
-              </div>
-            </div>
-
-            {/* end of github auth button */}
-
-            {/* end of google auth button */}
-            <p className='mb-6 ml-1  text-white text-semibold  '>
-              {variant === 'login' ? 'New to Netflix? ' : 'Already a member ?'}
-              <span
-                onClick={toggleVariant}
-                className=' items-center text-bold text-red-500 cursor-pointer'
-              >
-                <button className=' transition hover:-translate-y-1 text-white ml-1 hover:text-red-700 hover:underline cursor-pointer'>
-                  {' '}
-                  {variant === 'login' ? 'create an account' : 'Login'}
-                </button>
-              </span>
-            </p>
           </div>
         </div>
       </div>
     </div>
   );
-};
-
-export default Header;
+}
