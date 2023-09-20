@@ -3,7 +3,7 @@ import play from '../assets/play.png';
 
 function VideoTitle({ title, overview }) {
   return (
-    <div className='pt-36 px-12'>
+    <div className='pt-36 w-screen aspect-video bg-gradient-to-r from-black px-12 absolute text-white'>
       <div className='text-3xl font-bold '>{title}</div>
       <p className='py-6 text-lg w-1/4'>{overview}</p>
       <div className='flex gap-x-4 mb-4 '>
