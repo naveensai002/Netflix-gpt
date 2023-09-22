@@ -1,24 +1,35 @@
-import React from 'react';
-import MovieList from './MovieList';
 import { useSelector } from 'react-redux';
+import MovieList from './MovieList';
 
-function SecondaryContainer() {
-  const movies = useSelector((state) => state.movies);
-  // console.log('movieList', movies);
-
+const SecondaryContainer = () => {
+  const movieStore = useSelector((store) => store.movies);
   return (
-    movies.nowPlayingMovie && (
-      <div className='bg-black  '>
-        <div className='relative -mt-32 z-20 '>
-          <MovieList title='Now Playing' movies={movies.nowPlayingMovie} />
-          <MovieList title='Trending' movies={movies.nowPlayingMovie} />
-          <MovieList title='Popular' movies={movies.popularMovie} />
-          <MovieList title='Upcoming Movies' movies={movies.nowPlayingMovie} />
-          <MovieList title='Horror' movies={movies.nowPlayingMovie} />
+    <>
+      {movieStore && (
+        <div className='bg-black'>
+          <div className='pl-12  mt-[2.2rem] md:-mt-64 mt-0 relative z-20'>
+            <MovieList
+              title={'Now Playing'}
+              movies={movieStore?.nowPlayingMovie}
+            />
+            <MovieList title={'Trending'} movies={movieStore?.trendingMovie} />
+            <MovieList title={'Horror'} movies={movieStore?.horrorMovie} />
+            <MovieList title={'Popular'} movies={movieStore?.popularMovie} />
+            <MovieList
+              title={'Upcoming Movies'}
+              movies={movieStore?.upcomingMovie}
+            />
+          </div>
         </div>
-      </div>
-    )
+      )}
+      {/* Movie list popuplar
+           MovieCard * n
+           Movie List - now playing
+           Movie lIst - trending
+           movie list - horror
+           */}
+    </>
   );
-}
+};
 
 export default SecondaryContainer;

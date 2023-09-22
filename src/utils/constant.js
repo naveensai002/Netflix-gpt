@@ -16,3 +16,11 @@ export const options = {
       'Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJjYzgzMzVjZDdiYWU0MTczZGRiMmM4ZDczYjJjMWY3MyIsInN1YiI6IjYzZGU1ZDRlY2U1ZDgyMDBjZDhmZjkxZSIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.kOUgFEQP-PK1lWN-7pdxWDPGPKqgqx4cXybG61W9Cvc',
   },
 };
+
+export const supportedLanguages = [
+  { identfier: 'en', name: 'English' },
+  { identfier: 'hindi', name: 'Hindi' },
+  { identfier: 'spanish', name: 'Spanish' },
+  { identfier: 'italian', name: 'Italian' },
+  { identfier: 'russian', name: 'Russian' },
+];

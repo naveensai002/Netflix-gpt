@@ -4,8 +4,9 @@ import photo from '../../public/RedProfile.png';
 import { signOut } from 'firebase/auth';
 import { auth } from '../utils/firebase';
 import { useNavigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import NavbarItem from './NavbarItem';
+import { supportedLanguages } from '../utils/constant';
 
 import {
   BellIcon,
@@ -16,6 +17,9 @@ import {
 import MobileMenu from './MobileMenu';
 import AccountMenu from './AccountMenu';
 import useNowPlayingHooks from '../hooks/useNowPlayingHooks';
+import GptSearch from './GptSearch';
+import { toggleGptSearchView } from '../utils/gptSlice';
+import { changeLanguage } from '../utils/configSlice';
 
 const images = [
   '../../public/default-blue.png',
@@ -29,20 +33,30 @@ const TOP_OFFSET = 66;
 
 export default function Header() {
   const user = useSelector((state) => state.user);
+  const gptSearchView = useSelector((state) => state.gpt?.showGptSearch);
 
   // console.log(user);
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const [mobileMenu, setMobileMenu] = useState(false);
   const [showAccountMenu, setShowAccountMenu] = useState(false);
   const [showBackground, setShowBackground] = useState(false);
+
   // const [movies, setMovies] = useState([]);
 
   /* movie fetch call*/
   //used the logic in custom hook
   const data = useNowPlayingHooks();
-  console.log(data);
+  // console.log(data);
   /* */
+  const toggleGptSearch = () => {
+    dispatch(toggleGptSearchView());
+  };
+  const handleLanguageChange = useCallback((e) => {
+    console.log(e.target.value);
+    dispatch(changeLanguage(e.target.value));
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -93,18 +107,8 @@ export default function Header() {
         {/* </div> */}
 
         {/* nav icon items */}
-        <div
-          className='
-        flex
-        flex-row
-        ml-8
-        gap-7
-        hidden
-       
-        text-white
-        lg:flex
-        cursor-pointer'
-        >
+
+        <div className='flex flex-row ml-8 gap-7 hidden  text-white lg:flex cursor-pointer'>
           <NavbarItem label='Home' />
           <NavbarItem label='Series' />
           <NavbarItem label='Films' />
@@ -115,32 +119,7 @@ export default function Header() {
 
         {/* end of nav icon items */}
 
-        {/* sign out button */}
-        {/* <div className=' relative flex lg:hidden flex-row  gap-2 ml-8 cursor-pointer '>
-        <img
-          src={user?.photoURL}
-          className='h-12 w-12 rounded-md bg-cover bg-center cursor-pointer'
-        />
-        <button
-          className='text-white bg-transparent -tracking-tighter font-semibold p-1 items-center h-12 ml-2 rounded-md
-          transition hover:-translate-y-1 hover:text-red-600 capitalize  cursor-pointer'
-          onClick={handleSignout}
-        >
-          Sign out
-        </button>
-      </div> */}
-
-        <div
-          className='
-             lg:hidden 
-              flex flex-row 
-              cursor-pointer
-              gap-2 
-              ml-2
-              items-center
-              relative
-      '
-        >
+        <div className='lg:hidden flex flex-row cursor-pointer  gap-2   ml-2 items-center relative '>
           <p className='text-white text-sm '>Browse</p>
           <ChevronDownIcon
             className={`w-4 text-white fill-white transition ${
@@ -152,13 +131,37 @@ export default function Header() {
         </div>
 
         <div className='hidden lg:flex flex-row h-6 ml-auto mx-auto gap-7 items-center mr-4'>
+          {/* GPT SEARCH */}
           <div
-            className='
-        text-gray-200 hover:text-gray-300 cursor-pointer transition
+            className=' text-gray-200 hover:text-gray-300 cursor-pointer transition
         '
           >
-            <MagnifyingGlassIcon className='w-6' />
+            <MagnifyingGlassIcon onClick={toggleGptSearch} className='w-6' />
           </div>
+
+          {/* END OF SEARCH */}
+          {/*  lang button*/}
+          {gptSearchView && (
+            <select
+              name='language'
+              className='bg-transparent p-2 text-white font-bold text-sm rounded-md'
+              onChange={handleLanguageChange}
+            >
+              {supportedLanguages.map((langauge) => {
+                return (
+                  <option
+                    className='bg-black p-2 m-2 text-semibold'
+                    key={langauge.name}
+                    value={langauge.identfier}
+                  >
+                    {langauge.name}
+                  </option>
+                );
+              })}
+            </select>
+          )}
+
+          {/* end of lang button */}
           <div className='text-gray-200 hover:text-gray-300 cursor-pointer transition'>
             <BellIcon className='w-6' />
           </div>
@@ -166,7 +169,7 @@ export default function Header() {
             onClick={toggleAccountMenu}
             className=' flex flex-row justify-center m-auto'
           >
-            <div className='flex  flex-row ml-2 gap-2 cursor-pointer'>
+            <div className='flex  flex-row ml-2 gap-2 cursor-pointer rounded-lg'>
               <img
                 src={imgsrc}
                 alt='user-profile'
