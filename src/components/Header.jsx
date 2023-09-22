@@ -140,7 +140,9 @@ export default function Header() {
           </div>
 
           {/* END OF SEARCH */}
+
           {/*  lang button*/}
+
           {gptSearchView && (
             <select
               name='language'
