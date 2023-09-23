@@ -25,4 +25,4 @@ export const supportedLanguages = [
   { identfier: 'russian', name: 'Russian' },
 ];
 
-export const OPENAI_KEY = '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';
+export const OPENAI_KEY = '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';
